@@ -1,0 +1,23 @@
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "chess.js": "github:jhlywa/chess.js",
+    "expo": "^31.0.2",
+    "react": "16.5.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.0.tar.gz",
+    "react-native-modalbox": "^1.3.9",
+    "react-native-segmented-control-tab": "^3.0.2",
+    "react-native-vector-icons": "^4.1.1",
+    "react-navigation": "^1.0.0-beta.9"
+  },
+  "devDependencies": {
+    "babel-preset-expo": "^5.0.0"
+  },
+  "private": true
+}
