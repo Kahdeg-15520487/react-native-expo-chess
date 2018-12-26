@@ -8,7 +8,7 @@
   [How to chess](https://www.chess.com/learn-how-to-play-chess)
   
 ## Release
-  [build](https://expo.io/builds/3c2cf6de-058a-4da3-91ff-32b4e06fb5b9)
+  [build](https://expo.io/builds/ee1f3e15-35c0-4f47-9ea9-bb08f168e80c)
   
 ## Function and Screenshot
   Note: Game will boot up on the default 'Play with friend' screen 
