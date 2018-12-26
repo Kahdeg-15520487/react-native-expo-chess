@@ -102,22 +102,38 @@ export default class PlayerVsLichessAI extends Component {
 
   doAIMove = () => {
     const { game, userColor, isAi } = this.state;
-    var possibleMoves = game.moves();
+    var possibleMoves = game.moves({verbose:true});
 
     // game over
     if (possibleMoves.length === 0) return;
     console.log(possibleMoves.join(', '));
-
-    var randomIndex = Math.floor(Math.random() * possibleMoves.length);
-    console.log(possibleMoves[randomIndex]);
-    const isLegal = game.move(possibleMoves[randomIndex]);
-    console.log(isLegal);
-    const from = isLegal.from;
-    const to = isLegal.to;
+    var captureMove=false;    
+    var from;
+    var to;
+    possibleMoves.forEach(function(move) {
+      if(move.captured)
+      {
+        captureMove = true;
+        from = move.from;
+        to = move.to;
+        console.log(JSON.stringify(move));
+      }
+    });
+    if(captureMove){}
+    else{
+      var randomIndex = Math.floor(Math.random() * possibleMoves.length);
+      console.log(possibleMoves[randomIndex]);
+      const isLegal = game.move(possibleMoves[randomIndex]);
+      console.log(isLegal);
+      from = isLegal.from;
+      to = isLegal.to;
+    }
     console.log("from: "+from);
     console.log("to: "+to);
     console.log("ai color: "+userColor);
-    game.move({ from: from,to: to, promotion: 'q' });
+    if(captureMove){
+      game.move({ from: from,to: to, promotion: 'q' });
+    }
 
     if(game.in_check()=== true){
       this.setState({ inCheck: userColor === 'w' ? "black" : "white" });
