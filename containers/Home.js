@@ -8,6 +8,7 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  NetInfo 
 } from 'react-native';
 
 import Modal from 'react-native-modalbox';
@@ -45,18 +46,30 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount() {
-    Linking.getInitialURL().then(url => {
-      if (url) {
-        this.handleOpenURL(url);
+    var isOnline = true;
+    NetInfo.isConnected.fetch().then(isConnected => {
+      isOnline = isConnected;
+      if(isConnected)
+      {
+        console.log('Internet is connected');
       }
-    });
+    })
 
-    Linking.addEventListener('url', event => this.handleOpenURL(event.url));
-    // sets session cookie
-    fetch(`${HTTP_BASE_URL}/account/info`).then(this.getDailyPuzzle);
+    if(isOnline){
+      Linking.getInitialURL().then(url => {
+        if (url) {
+          this.handleOpenURL(url);
+        }
+      });
+
+      Linking.addEventListener('url', event => this.handleOpenURL(event.url));
+      // sets session cookie
+      fetch(`${HTTP_BASE_URL}/account/info`).then(this.getDailyPuzzle);
+    }
   }
 
   getDailyPuzzle = (res) => {
+    console.log("geting daily puzzle");
     fetch(`${HTTP_BASE_URL}/training/daily`, {
       headers: {
         Accept: 'application/vnd.lichess.v3+json',
@@ -171,7 +184,8 @@ export default class HomeScreen extends Component {
       );
 
     return (
-      <Modal isOpen={modalDisplayed} backdropOpacity={0.8} style={styles.modal}>
+      <Modal isOpen={modalDisplayed} backdropOpacity={0.8} style={styles.modal}
+      onClosed={()=>this.setState({modalDisplayed: false})}>
         <View style={styles.modalContent}>
           {fenTextBox}
           <Button
