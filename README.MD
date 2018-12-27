@@ -14,33 +14,41 @@
 ## Function and Screenshot
   Note: Game will boot up on the default 'Play with friend' screen 
   
- # HOME SCREEN
+  HOME SCREEN
   
   ![home screen](screenshot/Screenshot_20181226-003148.png) 
   
   There's 3 thing on the home screen: Puzzle of the day, Play with machine and play with friend
   
-  Puzzle of the day require Internet connection to work
+  Puzzle of the day require Internet connection to work, taken from https://lichess.org/. It will take a chess board with orginized piece place in order to form puzzle for you to solve. You can use the button 'Copy this board' to play the puzzle with AI or your friend, detail down below
   
   You can push the button to play with a friend on the same device like it's a chess board or play with an AI (AI not very good so that it won't take over the world)
   
- # SETUP A GAME
+  SETUP A GAME
   
   ![setup game](screenshot/Screenshot_20181226-003228.png)  
   
-  When playing the puzzle or with a friend or an AI, you can use the red button 'Copy this board' to copy a FEN string into your clipboard and paste it somewhere. 
+  When starting a new game with your friend or AI, a text box will appear contain a FEN string to initiate the board, press create to start a standard chess board
+  
+  When playing the puzzle or with a friend or an AI, you can use the red button 'Copy this board' to copy a FEN string (storing current location of the chess piece on the board) into your clipboard and paste it somewhere. 
+  
   So when next time you need to continue the game you can paste this string in to the text box when creating a new game to replicate the position of the piece on the board last time you play. This can be use in a lot of way!
   
- # HOT SEAT PLAY WITH FRIEND (OR AI IF YOU DON'T HAVE FRIEND)
+  HOT SEAT PLAY WITH FRIEND (OR AI IF YOU DON'T HAVE FRIEND)
   
   ![play screen](screenshot/Screenshot_20181226-003223.png) 
   
   Press on the chess piece, it will show the range of movement of the chess piece with dot on the board, tap where to go on the dot or tap the chess piece again to cancel movement.
+  
+  It have all the rule of original chess game like Castle move and Pawn promotion
  
 ## "Thing to improve on"
   Add a timer, score board, undo button.
+  
   Improve the save and load mechanic
+  
   Add a 'Highscore' list
+  
   ...
   
 ## Build instruction
