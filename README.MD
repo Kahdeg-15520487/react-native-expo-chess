@@ -24,6 +24,8 @@
   
   You can push the button to play with a friend on the same device like it's a chess board or play with an AI (AI not very good so that it won't take over the world)
   
+  AI use alpha-beta pruning search algorithm for predicting 1 move ahead.
+  
   SETUP A GAME
   
   ![setup game](screenshot/Screenshot_20181226-003228.png)  
