@@ -1,21 +1,21 @@
 import React, { Component } from 'react';
 import {
   ActivityIndicator,
-  Slider,
   Text,
   Linking,
   StyleSheet,
   View,
   TouchableOpacity,
-  TextInput,
-  NetInfo 
+  TextInput
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 
 import Modal from 'react-native-modalbox';
 import SegmentedControlTab from 'react-native-segmented-control-tab';
 import { Chess } from 'chess.js';
 
 import { Button, Board } from '../components';
+import { CommonActions } from '@react-navigation/native';
 
 const Constant = require('./Constant.js');
 
@@ -23,9 +23,9 @@ const HTTP_BASE_URL = 'https://en.lichess.org';
 const COLORS = ['white', 'random', 'black'];
 
 export default class HomeScreen extends Component {
-  static navigationOptions = {
-    title: 'Home',
-  };
+  // static navigationOptions = {
+  //   title: 'Home',
+  // };
 
   constructor(props) {
     super(props);
@@ -45,17 +45,21 @@ export default class HomeScreen extends Component {
     };
   }
 
+  getNavigationParams() {
+    console.log("lalalolo")
+    return this.props.navigation.state.params || {}
+  }
+
   componentDidMount() {
     var isOnline = true;
-    NetInfo.isConnected.fetch().then(isConnected => {
-      isOnline = isConnected;
-      if(isConnected)
-      {
+    NetInfo.fetch().then(state => {
+      isOnline = state.isConnected;
+      if (!isOnline) {
         console.log('Internet is connected');
       }
     })
 
-    if(isOnline){
+    if (isOnline) {
       Linking.getInitialURL().then(url => {
         if (url) {
           this.handleOpenURL(url);
@@ -63,34 +67,31 @@ export default class HomeScreen extends Component {
       });
 
       Linking.addEventListener('url', event => this.handleOpenURL(event.url));
-      // sets session cookie
-      fetch(`${HTTP_BASE_URL}/account/info`).then(this.getDailyPuzzle);
+      this.getDailyPuzzle();
     }
   }
 
-  getDailyPuzzle = (res) => {
+  getDailyPuzzle() {
     console.log("geting daily puzzle");
-    fetch(`${HTTP_BASE_URL}/training/daily`, {
-      headers: {
-        Accept: 'application/vnd.lichess.v3+json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    })
+    fetch('https://api.chess.com/pub/puzzle/random')
       .then(res => res.json())
       .then(res => {
-        const { id, fen, color, initialMove, lines } = res.puzzle;
+        console.log("daily puzle " + res.fen);
+        const fen = res.fen;
+        const chess = Chess();
+        chess.load(fen);
+        const color = chess.turn();
 
         this.setState({
-          puzzleColor: color === 'white' ? 'w' : 'b',
+          puzzleColor: color,
           puzzleFen: fen,
-          puzzleData: res.puzzle,
           ready: true,
         });
       });
   };
 
   handleOpenURL(url) {
-    const { navigate } = this.props.navigation;
+    const navigation = this.props.navigation;
     const {
       selectedColorIndex,
       selectedTimeIndex,
@@ -100,7 +101,10 @@ export default class HomeScreen extends Component {
       aiLevel,
       playVsAI,
     } = this.state;
-    console.log("url: "+url);
+    console.log("url: " + url);
+    if (url.includes("exp")) {
+      return;
+    }
     const fen = url.replace('lichess599://', '');
     const playConfig = JSON.stringify({
       variant: 1,
@@ -110,9 +114,12 @@ export default class HomeScreen extends Component {
       increment: `${incrementSeconds}`,
       level: `${aiLevel}`,
       color: COLORS[selectedColorIndex],
-      fen: fen.includes('://')? Constant.defaultfen:fen,
+      fen: fen.includes('://') ? Constant.defaultfen : fen,
     });
-    navigate('PlayerVsFriend', { config: playConfig });
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: 'PlayerVsFriend', params: { config: playConfig }
+      }));
   }
 
   displayModal(playVsAI) {
@@ -123,7 +130,7 @@ export default class HomeScreen extends Component {
   }
 
   create = () => {
-    const { navigate } = this.props.navigation;
+    const navigation = this.props.navigation;
     const {
       selectedColorIndex,
       selectedTimeIndex,
@@ -144,17 +151,28 @@ export default class HomeScreen extends Component {
       color: COLORS[selectedColorIndex],
       fen: fen,
     });
-    console.log("home: "+playConfig);
+    console.log("home: " + playConfig);
     if (playVsAI) {
-      navigate('PlayerVsAI', {
-        config: playConfig,
-        time: selectedTimeIndex === 1 ? totalMinutes * 60 : -1,
-      });
+      console.log(this.props.navigation);
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'PlayerVsAI',
+          params: {
+            config: playConfig,
+            time: selectedTimeIndex === 1 ? totalMinutes * 60 : -1,
+            name: 'Play with AI'
+          }
+        }));
     } else {
-      navigate('PlayerVsFriend', {
-        config: playConfig,
-        time: selectedTimeIndex === 1 ? totalMinutes * 60 : -1,
-      });
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'PlayerVsFriend',
+          params: {
+            config: playConfig,
+            time: selectedTimeIndex === 1 ? totalMinutes * 60 : -1,
+            name: 'Play with Friend'
+          }
+        }));
     }
 
     this.setState({ modalDisplayed: false });
@@ -173,19 +191,20 @@ export default class HomeScreen extends Component {
     } = this.state;
 
     let fenTextBox = (
-        <View>
-          <Text style={styles.label}>FEN string</Text>
-          <TextInput
-            style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-            onChangeText={(text) =>{console.log(text); this.setState({fen: text})}}
-            value={fen}
-          />
-        </View>
-      );
+      <View>
+        <Text style={styles.label}>FEN string</Text>
+        <TextInput
+          style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+          onChangeText={(text) => { console.log(text); this.setState({ fen: text }) }}
+          value={fen}
+        />
+      </View>
+    );
 
     return (
       <Modal isOpen={modalDisplayed} backdropOpacity={0.8} style={styles.modal}
-      onClosed={()=>this.setState({modalDisplayed: false})}>
+        onClosed={() => this.setState({ modalDisplayed: false })}
+        swipeToClose={true}>
         <View style={styles.modalContent}>
           {fenTextBox}
           <Button
@@ -199,8 +218,8 @@ export default class HomeScreen extends Component {
   }
 
   renderPuzzleBoard() {
-    const { navigate } = this.props.navigation;
-    const { puzzleColor, puzzleFen, puzzleData } = this.state;
+    const navigation = this.props.navigation;
+    const { puzzleColor, puzzleFen } = this.state;
     const {
       selectedColorIndex,
       selectedTimeIndex,
@@ -222,10 +241,22 @@ export default class HomeScreen extends Component {
       fen: puzzleFen,
     });
 
+    console.log("render puzzle board");
+    console.log("fen to render: " + puzzleFen);
+    console.log("start color: " + puzzleColor);
+
     return (
       <View style={styles.puzzleContainer}>
-        <Text style={styles.puzzleHeadline}>Puzzle of the day</Text>
-        <TouchableOpacity onPress={() => navigate('PlayerVsFriend', { config: playConfig })}>
+
+        <Text style={styles.puzzleHeadline} onPress={() => { this.setState(this.state); }}>Puzzle of the day</Text>
+        <TouchableOpacity onPress={() =>
+          navigation.dispatch(
+            CommonActions.navigate({
+              name: 'PlayerVsFriend',
+              params: { config: playConfig },
+            })
+          )
+        }>
           <Board
             style={styles.board}
             size={200}
@@ -251,11 +282,43 @@ export default class HomeScreen extends Component {
   }
 
   render() {
-    const { navigate } = this.props.navigation;
+    const navigation = this.props.navigation;
+
+    const { puzzleColor, puzzleFen } = this.state;
+    const {
+      selectedColorIndex,
+      selectedTimeIndex,
+      modalDisplayed,
+      totalMinutes,
+      incrementSeconds,
+      aiLevel,
+      playVsAI,
+      fen,
+    } = this.state;
+    const playConfig = JSON.stringify({
+      variant: 1,
+      timeMode: selectedTimeIndex,
+      days: '2',
+      time: `${totalMinutes}`,
+      increment: `${incrementSeconds}`,
+      level: `${aiLevel}`,
+      color: COLORS[selectedColorIndex],
+      fen: puzzleFen,
+    });
 
     return (
       <View style={styles.container}>
-        {this.renderPuzzleBoard()}
+        <Button
+          style={styles.button}
+          text={'Random puzzle'}
+          onPress={() => navigation.dispatch(
+            CommonActions.navigate({
+              name: 'PlayerVsAI',
+
+              params: { config: playConfig, name: 'Daily puzzle' },
+            })
+          )}
+        />
         <Button
           style={styles.button}
           text={'Play with the machine'}

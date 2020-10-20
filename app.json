@@ -3,7 +3,6 @@
     "name": "chess",
     "slug": "chess",
     "privacy": "public",
-    "sdkVersion": "31.0.0",
     "platforms": [
       "android"
     ],

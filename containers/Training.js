@@ -40,6 +40,10 @@ export default class Training extends Component {
     };
   }
 
+  getNavigationParams() {
+    return this.props.navigation.state.params || {}
+  }
+
   componentDidMount() {
     const { puzzleData } = this.props.navigation.state.params;
     this.drawPuzzle(puzzleData);

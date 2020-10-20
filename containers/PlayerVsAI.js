@@ -28,11 +28,12 @@ export default class PlayerVsLichessAI extends Component {
   };
 
   constructor(props) {
+    console.log("play vs ai");
     super(props);
-
     const {
-      time
-    } = this.props.navigation.state.params;
+      time,
+      config
+    } = props.route.params;
     this.latestClock = {
       white: time,
       black: time,
@@ -50,7 +51,12 @@ export default class PlayerVsLichessAI extends Component {
       resigned: false,
       inCheck: undefined,
       isAi: false,
+      config: config
     };
+  }
+
+  getNavigationParams() {
+    return this.props.navigation.state.params || {}
   }
 
   componentDidMount() {
@@ -84,15 +90,11 @@ export default class PlayerVsLichessAI extends Component {
     const {
       navigation
     } = this.props;
-    console.log(navigation);
-    const param = navigation.getParam('config', undefined);
-    console.log("param: "+param);
-    const playConfig = JSON.parse(param);
+
+    const playConfig = JSON.parse(this.state.config);
     const { game, userColor } = this.state;
 
-    console.log(playConfig.fen);
     console.log(game.load(playConfig.fen));
-    console.log("created");
     this.setState({
       initialized: true,
       userColor: game.turn(),
@@ -102,25 +104,24 @@ export default class PlayerVsLichessAI extends Component {
 
   doAIMove = () => {
     const { game, userColor, isAi } = this.state;
-    var possibleMoves = game.moves({verbose:true});
+    var possibleMoves = game.moves({ verbose: true });
 
     // game over
     if (possibleMoves.length === 0) return;
     console.log(possibleMoves.join(', '));
-    var captureMove=false;    
+    var captureMove = false;
     var from;
     var to;
-    possibleMoves.forEach(function(move) {
-      if(move.captured)
-      {
+    possibleMoves.forEach(function (move) {
+      if (move.captured) {
         captureMove = true;
         from = move.from;
         to = move.to;
         console.log(JSON.stringify(move));
       }
     });
-    if(captureMove){}
-    else{
+    if (captureMove) { }
+    else {
       var randomIndex = Math.floor(Math.random() * possibleMoves.length);
       console.log(possibleMoves[randomIndex]);
       const isLegal = game.move(possibleMoves[randomIndex]);
@@ -128,21 +129,21 @@ export default class PlayerVsLichessAI extends Component {
       from = isLegal.from;
       to = isLegal.to;
     }
-    console.log("from: "+from);
-    console.log("to: "+to);
-    console.log("ai color: "+userColor);
-    if(captureMove){
-      game.move({ from: from,to: to, promotion: 'q' });
+    console.log("from: " + from);
+    console.log("to: " + to);
+    console.log("ai color: " + userColor);
+    if (captureMove) {
+      game.move({ from: from, to: to, promotion: 'q' });
     }
 
-    if(game.in_check()=== true){
+    if (game.in_check() === true) {
       this.setState({ inCheck: userColor === 'w' ? "black" : "white" });
     }
-    else{
+    else {
       this.setState({ inCheck: undefined });
     }
 
-    if(game.in_checkmate() === true){
+    if (game.in_checkmate() === true) {
       this.setState({ victor: userColor === 'w' ? "white" : "black" });
     }
 
@@ -154,19 +155,19 @@ export default class PlayerVsLichessAI extends Component {
   }
 
   onMove = ({ from, to }) => {
-    console.log("from: "+from);
-    console.log("to: "+to);
+    console.log("from: " + from);
+    console.log("to: " + to);
     const { game, userColor } = this.state;
-    game.move({ from: from,to: to, promotion: 'q' });
+    game.move({ from: from, to: to, promotion: 'q' });
 
-    if(game.in_check()=== true){
+    if (game.in_check() === true) {
       this.setState({ inCheck: userColor === 'w' ? "black" : "white" });
     }
-    else{
+    else {
       this.setState({ inCheck: undefined });
     }
 
-    if(game.in_checkmate() === true){
+    if (game.in_checkmate() === true) {
       this.setState({ victor: userColor === 'w' ? "white" : "black" });
     }
 
@@ -174,13 +175,13 @@ export default class PlayerVsLichessAI extends Component {
       initialized: true,
       userColor: game.turn(),
     });
-      
+
     this.doAIMove();
   };
 
   shouldSelectPiece = piece => {
     const { game, userColor, victor } = this.state;
-    console.log(userColor+" select: "+piece.color+piece.type);
+    console.log(userColor + " select: " + piece.color + piece.type);
     const turn = game.turn();
     if (
       victor ||
@@ -194,10 +195,10 @@ export default class PlayerVsLichessAI extends Component {
     return true;
   };
 
-  copyFen = async ()=>{
-    const{game} = this.state;
+  copyFen = async () => {
+    const { game } = this.state;
     await Clipboard.setString(game.fen());
-    ToastAndroid.show('Board copied ',ToastAndroid.SHORT);
+    ToastAndroid.show('Board copied ', ToastAndroid.SHORT);
   }
 
   renderVictorText() {
@@ -206,10 +207,10 @@ export default class PlayerVsLichessAI extends Component {
     } = this.state;
 
     if (victor) {
-      return ( <Text style = {styles.statusText} >
+      return (<Text style={styles.statusText} >
         Game over, {victor}
         is victorious!
-        </Text>
+      </Text>
       );
     }
     return null;
@@ -236,7 +237,7 @@ export default class PlayerVsLichessAI extends Component {
     if (!initialized) {
       return <ActivityIndicator style={styles.container} animating />;
     }
-    
+
     return (
       <View style={styles.container} >
         {this.renderVictorText()}
@@ -247,31 +248,31 @@ export default class PlayerVsLichessAI extends Component {
           shouldSelectPiece={this.shouldSelectPiece}
           onMove={this.onMove}
         />
-          <Button
-            style={styles.resignButton}
-            text={"Copy this board"}
-            onPress={this.copyFen}
-          />
+        <Button
+          style={styles.resignButton}
+          text={"Copy this board"}
+          onPress={this.copyFen}
+        />
       </View>
     );
   }
 }
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 16,
-      backgroundColor: 'black',
-    },
-    statusText: {
-      color: 'red',
-      fontSize: 16,
-      margin: 4,
-    },
-    resignButton: {
-      width: 200,
-      backgroundColor: 'red',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: 'black',
+  },
+  statusText: {
+    color: 'red',
+    fontSize: 16,
+    margin: 4,
+  },
+  resignButton: {
+    width: 200,
+    backgroundColor: 'red',
+  },
+});

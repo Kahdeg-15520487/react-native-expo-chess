@@ -18,7 +18,11 @@ export default class Clock extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  getNavigationParams() {
+    return this.props.navigation.state.params || {}
+  }
+
+  componentDidUpdate(nextProps) {
     const nextTime = nextProps.time;
     if (this.props.time !== nextTime) {
       this.setState({

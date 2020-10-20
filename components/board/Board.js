@@ -66,7 +66,7 @@ export default class BoardView extends Component {
     // }
   };
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(nextProps) {
     const nextFen = nextProps.fen;
     if (nextFen !== this.props.fen) {
       this.setState({
@@ -293,6 +293,8 @@ export default class BoardView extends Component {
     const { color, style } = this.props;
     //const reverseBoard = color === 'b';
     const reverseBoard = false;
+
+    console.log("rendering board with: "+this.props.fen);
 
     return (
       <View style={[styles.container, style]}>

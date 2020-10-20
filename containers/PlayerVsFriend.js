@@ -9,14 +9,17 @@ var Constant = require('./Constant.js');
 //const dongSound = new Expo.Audio.Sound();
 
 export default class PlayerVsFriend extends Component {
-  static navigationOptions = {
-    title: 'Play with a friend',
-  };
+  // static navigationOptions = {
+  //   title: 'Play with a friend',
+  // };
 
   constructor(props) {
     super(props);
 
-    const { time } = this.props.navigation.state.params;
+    const {
+      time,
+      config
+    } = props.route.params;
     this.clientId = Math.random().toString(36).substring(2);
 
     this.state = {
@@ -30,7 +33,13 @@ export default class PlayerVsFriend extends Component {
       victor: '',
       resigned: false,
       inCheck: undefined,
+      isAi: false,
+      config: config
     };
+  }
+
+  getNavigationParams() {
+    return this.props.navigation.state.params || {}
   }
 
   componentDidMount() {
@@ -61,15 +70,11 @@ export default class PlayerVsFriend extends Component {
     const {
       navigation
     } = this.props;
-    console.log(navigation);
-    const param = navigation.getParam('config', undefined);
-    console.log("param: "+param);
-    const playConfig = JSON.parse(param);
+
+    const playConfig = JSON.parse(this.state.config);
     const { game, userColor } = this.state;
 
-    console.log(playConfig.fen);
     console.log(game.load(playConfig.fen));
-    console.log("created");
     this.setState({
       initialized: true,
       userColor: game.turn(),
@@ -84,27 +89,27 @@ export default class PlayerVsFriend extends Component {
   }
 
   createSocket = (socketUrl, socketId) => {
-    
+
   };
 
   onMove = ({ from, to }) => {
-    console.log("from: "+from);
-    console.log("to: "+to);
+    console.log("from: " + from);
+    console.log("to: " + to);
     const { game, userColor } = this.state;
-    game.move({ from: from,to: to, promotion: 'q' });
+    game.move({ from: from, to: to, promotion: 'q' });
 
-    if(game.in_check()=== true){
+    if (game.in_check() === true) {
       console.log(userColor === 'w' ? "black" : "white" + "in check");
       this.setState({ inCheck: userColor === 'w' ? "black" : "white" });
     }
-    else{
+    else {
       console.log(userColor === 'w' ? "black" : "white" + " not in check");
       this.setState({ inCheck: undefined });
     }
 
-    if(game.in_checkmate() === true){
+    if (game.in_checkmate() === true) {
       console.log(userColor === 'w' ? "black" : "white" + "in checkmate");
-      this.setState({ victor: userColor === 'w' ? "white" : "black" });
+      this.setState({ victor: userColor === 'w' ? "white " : "black " });
     }
 
     this.setState({
@@ -118,7 +123,7 @@ export default class PlayerVsFriend extends Component {
     const { game, userColor, victor } = this.state;
     const turn = game.turn();
     console.log(userColor);
-    console.log(turn+" select: "+piece.color+piece.type);
+    console.log(turn + " select: " + piece.color + piece.type);
     if (
       victor ||
       game.in_checkmate() === true ||
@@ -127,9 +132,9 @@ export default class PlayerVsFriend extends Component {
       piece.color !== userColor
     ) {
       console.log(victor);
-      console.log(game.in_checkmate() === true );
-      console.log(game.in_draw() === true );
-      console.log(turn !== userColor );
+      console.log(game.in_checkmate() === true);
+      console.log(game.in_draw() === true);
+      console.log(turn !== userColor);
       console.log(piece.color !== userColor);
       console.log("cant select");
       return false;
@@ -138,23 +143,23 @@ export default class PlayerVsFriend extends Component {
     return true;
   };
 
-  copyFen = async ()=>{
-    const{game} = this.state;
+  copyFen = async () => {
+    const { game } = this.state;
     await Clipboard.setString(game.fen());
-    ToastAndroid.show('Board copied ',ToastAndroid.SHORT);
+    ToastAndroid.show('Board copied ', ToastAndroid.SHORT);
   }
 
   renderVictorText() {
-    const { victor,inCheck } = this.state;
+    const { victor, inCheck } = this.state;
 
     if (victor) {
       return (
-          <Text style={styles.statusText}>
+        <Text style={styles.statusText}>
           Game over, {victor} is victorious!
         </Text>
       );
     }
-    if( inCheck){
+    if (inCheck) {
       return (
         <Text style={styles.statusText}>
           {inCheck} is in check
@@ -163,25 +168,25 @@ export default class PlayerVsFriend extends Component {
     }
     return (<Text style={styles.statusText}>    </Text>);
   }
-//   <Text style={[styles.text, styles.headline]}>
-//   Waiting for a friend!
-// </Text>
-// <Text style={styles.text}>
-//   To invite someone to play, give this URL
-// </Text>
-// <Text style={[styles.text, styles.urlText]}>
-//   {`${URL_SCHEME}${invitationId}`}
-// </Text>
-// <Text style={styles.text}>
-//   The first person to come to this URL will play with you.
-// </Text>
+  //   <Text style={[styles.text, styles.headline]}>
+  //   Waiting for a friend!
+  // </Text>
+  // <Text style={styles.text}>
+  //   To invite someone to play, give this URL
+  // </Text>
+  // <Text style={[styles.text, styles.urlText]}>
+  //   {`${URL_SCHEME}${invitationId}`}
+  // </Text>
+  // <Text style={styles.text}>
+  //   The first person to come to this URL will play with you.
+  // </Text>
   renderInvitationMessage() {
     const { invitationId, gameStarted } = this.state;
     if (invitationId && !gameStarted) {
       return (
         <View style={styles.fullScreen}>
           <View style={styles.invitationBox}>
-            
+
             <Button text={'Share game URL'} onPress={this.share} />
           </View>
         </View>
@@ -214,7 +219,7 @@ export default class PlayerVsFriend extends Component {
     if (!initialized) {
       return <ActivityIndicator style={styles.container} animating />;
     }
-    
+
     return (
       <View style={styles.container} >
         {this.renderVictorText()}
@@ -225,11 +230,11 @@ export default class PlayerVsFriend extends Component {
           shouldSelectPiece={this.shouldSelectPiece}
           onMove={this.onMove}
         />
-          <Button
-            style={styles.resignButton}
-            text={"Copy this board"}
-            onPress={this.copyFen}
-          />
+        <Button
+          style={styles.resignButton}
+          text={"Copy this board"}
+          onPress={this.copyFen}
+        />
       </View>
     );
   }
